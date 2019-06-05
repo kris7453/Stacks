@@ -1,5 +1,15 @@
 #include <iostream>
 
-int main() {
-    std::cout << "Hello Easy C++ project!" << std::endl;
+#include "../include/arrayStack.hpp"
+
+    using namespace std;
+
+int main()
+{
+    WSTI::stack<int> *stack;
+    stack = new WSTI::arrayStack<int>();
+
+    cout << "Its work!" << endl;
+
+    return 0;
 }
