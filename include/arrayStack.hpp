@@ -1,6 +1,7 @@
 #pragma once
-#include "../include/stack.hpp"
 #include <iostream>
+#include <new>
+#include "../include/stack.hpp"
 
 namespace WSTI
 {
@@ -9,15 +10,24 @@ namespace WSTI
     {
         public:
             arrayStack();
+            arrayStack( size_t initialSize );
             ~arrayStack();
 
-            bool    push( T item );
-            T*      pop();
-            T*      peek();
+            bool    push( T item ); 
+            T       pop();
+            T       peek();
             bool    empty();
-            int     size();
+            size_t  size();
+            size_t  maxSize();
             void    clear();
 
+        protected:
+            // Double stack size and return true if stack has been resizes or false when there isnt enaught memory to resize
+            bool resize();
+
+        private:
+            T*  items;
+            size_t maxLength;
     };
 }
 
