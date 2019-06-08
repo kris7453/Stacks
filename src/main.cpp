@@ -1,34 +1,42 @@
 #include <iostream>
 
 #include "../include/arrayStack.hpp"
+#include "../include/listStack.hpp"
 
     using namespace std;
 
+    typedef int stackType;
+
 int main()
 {
-    WSTI::stack<int> *stack;
-    stack = new WSTI::arrayStack<int>( 1 );
+    WSTI::stack<stackType> *stack;
+    stack = new WSTI::listStack<stackType>( );
 
     try
     {
-        for (size_t i = 0; i < 200000000; i++)
+        size_t stackSize = 200;
+
+        for (size_t i = 0; i < stackSize; i++)
         {
             stack->push(i);
+        }  
+
+        for (size_t i = 0; i < stackSize; i++)
+        {
+            cout << stack->pop() << endl;
         }
-
-
-        printf("Now I have size %d for %d.\n", stack->size(), stack->maxSize());
     }
-    catch( WSTI::stack<int>::stackException e )
+    catch( WSTI::stack<stackType>::stackException e )
     {
         switch ( e )
         {
-            case WSTI::stack<int>::stackException::stackOverflow:
-                cout << "Stack is overflowed!";
+            case WSTI::stack<stackType>::stackException::stackOverflow:
+                cout << "Stack is overflowed!" << endl;
+                printf("actual size of stack is %d elements %d.\n", stack->size(), stack->maxSize());
                 break;
 
-            case WSTI::stack<int>::stackException::emptyStack:
-                cout << "Stack is empty!";
+            case WSTI::stack<stackType>::stackException::emptyStack:
+                cout << "Stack is empty!" << endl;
                 break;
 
             default:
