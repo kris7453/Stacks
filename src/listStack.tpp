@@ -3,7 +3,7 @@ namespace WSTI
     template<typename T>
     listStack<T>::listStack()
     {
-        top = new listItem;
+        top = nullptr;
         stack<T>::length = 0;
     }
 
@@ -25,8 +25,9 @@ namespace WSTI
         catch ( const std::bad_alloc &e )
         {
             std::cerr << e.what() << '\n';
+            throw stack<T>::stackException::stackOverflow;
         }
-
+        
         newItem->item = item;
         newItem->prevItem = top;
 
@@ -60,7 +61,7 @@ namespace WSTI
     }
 
     template<typename T>
-    bool listStack<T>::empty()
+    bool listStack<T>::isEmpty()
     {
         return (top == nullptr);
     }
@@ -75,6 +76,12 @@ namespace WSTI
     size_t listStack<T>::maxSize()
     {
         return size();
+    }
+
+    template<typename T>
+    size_t listStack<T>::stackItemSize()
+    {
+        return sizeof(listItem);
     }
 
     template<typename T>

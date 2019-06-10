@@ -17,6 +17,7 @@ namespace WSTI
         catch( const std::bad_alloc& e )
         {
             std::cerr << e.what() << '\n';
+            throw stack<T>::stackException::stackOverflow;
         }
     }
 
@@ -61,7 +62,7 @@ namespace WSTI
     }
 
     template<typename T>
-    bool arrayStack<T>::empty()
+    bool arrayStack<T>::isEmpty()
     {
         return !stack<T>::length;
     }
@@ -76,6 +77,12 @@ namespace WSTI
     size_t arrayStack<T>::maxSize()
     {
         return maxLength;
+    }
+
+    template<typename T>
+    size_t arrayStack<T>::stackItemSize()
+    {
+        return sizeof(T);
     }
 
     template<typename T>

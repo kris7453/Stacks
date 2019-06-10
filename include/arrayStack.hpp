@@ -16,9 +16,10 @@ namespace WSTI
             bool    push( T item ); 
             T       pop();
             T       peek();
-            bool    empty();
+            bool    isEmpty();
             size_t  size();
             size_t  maxSize();
+            size_t  stackItemSize();
             void    clear();
 
         protected:
