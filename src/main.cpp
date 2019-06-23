@@ -1,11 +1,15 @@
 #include <iostream>
 #include <ctime>
+#include <iomanip>
+#include <unistd.h>
 
 #include "../include/arrayStack.hpp"
 #include "../include/listStack.hpp"
+#include <stack>
 
     using namespace std;
 
+    typedef unsigned long long size_long_t;
 
     enum stackType
     {
@@ -15,10 +19,11 @@
 
     typedef int stackImplementType;
 
-    bool createStack( WSTI::stack<stackImplementType> *&stack, bool infinit, stackType stack_t, const size_t &stackSize);
-    void testStack( WSTI::stack<stackImplementType> *stack, bool infinit, clock_t &start, clock_t &end, size_t &stackSize, size_t &stackItemSize);
+    bool createStack( WSTI::stack<stackImplementType>*& stack, bool infinit, stackType stack_t, const size_t& stackSize);
+    bool testStack( WSTI::stack<stackImplementType>* stack, bool infinit, stackType stack_t, clock_t& start, clock_t& end, size_long_t& stackSize, size_t& itemsCount, size_t& itemSize);
+    bool testSTLStack( std::stack<stackImplementType>* stack, bool infinit, clock_t& start, clock_t& end, size_long_t& stackSize, size_t& itemsCount, size_t& itemSize);
 
-    void showStackTestResult( const char* title, const clock_t &start, const clock_t &end, const size_t &stackSize, const size_t &stackItemSize);
+    void showStackTestResult( const clock_t& start, const clock_t& end, const size_long_t& stackSize, const size_t& itemsCount, const size_t& itemSize);
 
 /* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> main start <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
 
@@ -26,86 +31,142 @@ int main()
 {
     WSTI::stack<stackImplementType> *stack = nullptr;
     clock_t start, end;
-    size_t stackSize;
-    size_t stackItemSize;
+    size_long_t stackSize;
+    size_t itemsCount;
+    size_t itemSize;
     bool isStackInfinit = false;
+    bool testGood;
 
-    const short iterationNumber = 7;
-    const int startElements = 1000;
-    const int elementsMultipler = 10;
+    const short iterationNumber = 15;
+    const int startElements = 1'000'000;
+    const float elementsMultipler = 1.75;
 
-    stackSize = startElements;
+    cout << setw( 16 ) << left << "(De)+allocating"<< setw( 15 ) << "stack size"   << setw( 6 ) << "Item" << setw( 20 ) << "Stack size" << endl
+         << setw( 16 ) << left << "time(s)"        << setw( 15 ) << "(items)<int>" << setw( 6 ) << "size" << setw( 20 ) << "(bytes)"<< endl << endl;
+
+    itemsCount = startElements;
+    cout << "Array stack" << endl;
     for ( size_t i = 0; i < iterationNumber; i++)
     {
-        if ( createStack( stack, isStackInfinit, stackType::arrayStack, stackSize) )
+        if ( createStack( stack, isStackInfinit, stackType::arrayStack, itemsCount) )
         {
-            testStack( stack, isStackInfinit, start, end, stackSize, stackItemSize);
-            showStackTestResult( "Array stack: ", start, end, stackSize, stackItemSize);
+            testGood = testStack( stack, isStackInfinit, stackType::arrayStack, start, end, stackSize, itemsCount, itemSize);
+            showStackTestResult( start, end, stackSize, itemsCount, itemSize);
         }
         else
-            cout << "Stack couldn't be created!" << endl;
+        {
+            cerr << "Stack couldn't be created!" << endl;
+            break;
+        }
 
-        stackSize *= elementsMultipler;
-        cout << "Press any key to continue...";
-        getchar();
+        if ( !testGood )
+            break;
+
+        itemsCount *= elementsMultipler;
+        // cout << "Press any key to continue...";
+        // getchar();
+        sleep( 4 );
+    }
+    // getchar();
+
+    cout << endl << endl;
+    sleep( 4 );
+
+    itemsCount = startElements;
+    cout << "List stack" << endl;
+    for ( size_t i = 0; i < iterationNumber; i++)
+    {
+        if ( createStack( stack, isStackInfinit, stackType::listStack, itemsCount) )
+        {
+            testGood = testStack( stack, isStackInfinit, stackType::listStack, start, end, stackSize, itemsCount, itemSize);
+            showStackTestResult( start, end, stackSize, itemsCount, itemSize);
+        }
+        else
+        {
+            cerr << "Stack couldn't be created!" << endl;
+            break;
+        }
+
+        if ( !testGood )
+            break;
+
+        itemsCount *= elementsMultipler;
+        // cout << "Press any key to continue..." << endl;
+        // getchar();
+        sleep( 4 );
+    }
+
+    cout << endl << endl;
+    sleep( 4 );
+
+    itemsCount = startElements;
+    std::stack<stackImplementType>* stlStack = nullptr;
+    cout << "STL stack" << endl;
+    for ( size_t i = 0; i < iterationNumber; i++)
+    {
+        if ( stlStack = new (std::nothrow) std::stack<stackImplementType>() )
+        {
+            testGood = testSTLStack( stlStack, isStackInfinit, start, end, stackSize, itemsCount, itemSize);
+            showStackTestResult( start, end, stackSize, itemsCount, itemSize);
+        }
+        else
+        {
+            cerr << "Stack couldn't be created!" << endl;
+            break;
+        }
+
+        if ( !testGood )
+            break;
+
+        itemsCount *= elementsMultipler;
+        // cout << "Press any key to continue..." << endl;
+        // getchar();
+        sleep( 4 );
     }
 
     cout << endl;
-
-    stackSize = startElements;
-    for ( size_t i = 0; i < iterationNumber; i++)
-    {
-        if ( createStack( stack, isStackInfinit, stackType::listStack, stackSize) )
-        {
-            testStack( stack, isStackInfinit, start, end, stackSize, stackItemSize);
-            showStackTestResult( "List stack: ", start, end, stackSize, stackItemSize);
-        }
-        else
-            cout << "Stack couldn't be created!" << endl;
-
-        stackSize *= elementsMultipler;
-        cout << "Press any key to continue..." << endl;
-        getchar();
-    }
 
     return 0;
 }
 
 /* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> main end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
 
-bool createStack( WSTI::stack<stackImplementType> *&stack, bool infinit, stackType stack_t, const size_t &stackSize)
+bool createStack( WSTI::stack<stackImplementType>*& stack, bool infinit, stackType stack_t, const size_t& stackSize)
 {
-    if( !infinit  && stack_t == stackType::arrayStack )
+    try
     {
-        try
+        if( !infinit  && stack_t == stackType::arrayStack )
         {
             stack = new WSTI::arrayStack<stackImplementType>( stackSize );
         }
-        catch(  const WSTI::stack<stackImplementType>::stackException &e )
+        else
         {
-            stack = nullptr;
-            return false;
+            switch ( stack_t )
+            {
+                case stackType::arrayStack:
+                    stack = new WSTI::arrayStack<stackImplementType>();
+                    break;
+
+                case stackType::listStack:
+                    stack = new WSTI::listStack<stackImplementType>();
+                    break;
+            }
         }
-
-        return true;
     }
-
-    switch ( stack_t )
+    catch(  const WSTI::stack<stackImplementType>::stackException &e )
     {
-        case stackType::arrayStack:
-            stack = new WSTI::arrayStack<stackImplementType>();
-            break;
-
-        case stackType::listStack:
-            stack = new WSTI::listStack<stackImplementType>();
-            break;
+        stack = nullptr;
+        return false;
     }
 
     return true;
 }
 
-void testStack( WSTI::stack<stackImplementType> *stack, bool infinit, clock_t &start, clock_t &end, size_t &stackSize, size_t &stackItemSize)
+bool testStack( WSTI::stack<stackImplementType>* stack, bool infinit, stackType stack_t, clock_t& start, clock_t& end, size_long_t& stackSize, size_t& itemsCount, size_t& itemSize)
 {
+    stackSize = 0;
+    bool testGood = true;
+
     try
     {
         if ( infinit )
@@ -117,20 +178,21 @@ void testStack( WSTI::stack<stackImplementType> *stack, bool infinit, clock_t &s
         else
         {
             start = clock();
-            for (size_t i = 0; i < stackSize; i++)
+            for (size_t i = 0; i < itemsCount; i++)
                 stack->push(i);
         }
     }
     catch( const WSTI::stack<stackImplementType>::stackException &e )
     {
+        testGood = false;
         switch ( e )
         {
             case WSTI::stack<stackImplementType>::stackException::stackOverflow:
-                cout << "Stack is overflowed!" << endl;
+                cerr << "Stack is overflowed!" << endl;
                 break;
 
             case WSTI::stack<stackImplementType>::stackException::emptyStack:
-                cout << "Stack is empty!" << endl;
+                cerr << "Stack is empty!" << endl;
                 break;
 
             default:
@@ -138,37 +200,80 @@ void testStack( WSTI::stack<stackImplementType> *stack, bool infinit, clock_t &s
         }
     }
 
-    end = clock();
-    stackSize = stack->size();
-    stackItemSize = stack->stackItemSize();
-
+    itemSize = stack->stackItemSize();
+    itemsCount = stack->size();
+    if ( stack_t == stackType::arrayStack )
+        stackSize += sizeof( *stack );
     delete stack;
     stack = nullptr;
+
+    end = clock();
+    stackSize += itemSize * itemsCount;
+
+    return testGood;
 }
 
-void showStackTestResult( const char* title, const clock_t &start, const clock_t &end, const size_t &stackSize, const size_t &stackItemSize)
+bool testSTLStack( std::stack<stackImplementType>* stack, bool infinit, clock_t& start, clock_t& end, size_long_t& stackSize, size_t& itemsCount, size_t& itemSize)
 {
-    short elementsWeight_t = 0;
-    float elementsWeight = stackSize * stackItemSize;
-    string weightPostfix;
+    bool testGood = true;
 
-    while( elementsWeight > 1024.0f )
+    try
     {
-        elementsWeight /= 1024.0f;
-        elementsWeight_t++;
+        if ( infinit )
+        {
+            start = clock();
+            for (size_t i = 0; ; i++)
+                stack->push(i);
+        }
+        else
+        {
+            start = clock();
+            for (size_t i = 0; i < itemsCount; i++)
+                stack->push(i);
+        }
+    }
+    catch( const std::exception& e )
+    {
+        cerr << e.what() << endl;
+        testGood = false;
     }
 
-    switch ( elementsWeight_t )
-    {
-        case 0: weightPostfix = "B"; break;
-        case 1: weightPostfix = "KB"; break;
-        case 2: weightPostfix = "MB"; break;
-        case 3: weightPostfix = "GB"; break;
-        default:
-            break;
-    }
+    itemsCount = stack->size();
+    stackSize = sizeof(*stack);
+    delete stack;
+    stack = nullptr;
+
+    end = clock();
+    itemSize = sizeof(stackImplementType);
+    stackSize += itemSize * itemsCount;
+
+    return testGood;
+}
+
+void showStackTestResult( const clock_t& start, const clock_t& end, const size_long_t& stackSize, const size_t& itemsCount, const size_t& itemSize)
+{
+    // short elementsWeight_t = 0;
+    // float elementsWeight = stackSize;
+    // string weightPostfix;
+
+    // while( elementsWeight > 1024.0f )
+    // {
+    //     elementsWeight /= 1024.0f;
+    //     elementsWeight_t++;
+    // }
+
+    // switch ( elementsWeight_t )
+    // {
+    //     case 0: weightPostfix = "B"; break;
+    //     case 1: weightPostfix = "KB"; break;
+    //     case 2: weightPostfix = "MB"; break;
+    //     case 3: weightPostfix = "GB"; break;
+    //     default:
+    //         break;
+    // }
 
     float endTime = static_cast<float>(end - start) / CLOCKS_PER_SEC;
 
-    printf("%s Its take %f seconds to add %u elements to stack of weight %f %s\n", title, endTime, stackSize, elementsWeight, weightPostfix.c_str());
+    //printf("%s Its take %f seconds to add %u elements to stack of size %d bytes for item of size %d bytes.\n", title, endTime, itemsCount, stackSize, itemSize);
+    cout << setw( 14 ) <<  right << fixed << setprecision( 3 ) << endTime << setw( 15 ) << itemsCount << setw( 6 ) << itemSize << setw( 16 ) << stackSize << endl;
 }
